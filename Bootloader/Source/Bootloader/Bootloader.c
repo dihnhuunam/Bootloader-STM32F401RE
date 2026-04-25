@@ -6,6 +6,17 @@
 #include "stm32f4xx_hal.h"
 #include <stdbool.h>
 
+static bool Bootloader_Is_Stack_Pointer_Valid(uint32_t stack_pointer)
+{
+    return (stack_pointer >= SRAM_START_ADDR) && (stack_pointer <= SRAM_END_ADDR) && ((stack_pointer & 0x7U) == 0U);
+}
+
+static bool Bootloader_Is_Reset_Handler_Valid(uint32_t reset_handler)
+{
+    return (reset_handler >= APP_VECTOR_TABLE_ADDR) && (reset_handler < SLOT_A_END_ADDR) &&
+           ((reset_handler & 0x1U) != 0U);
+}
+
 bool Bootloader_Verify_Slot()
 {
     // Verify Magic Number
@@ -18,23 +29,30 @@ bool Bootloader_Verify_Slot()
     }
 
     // Verify Stack Pointer
-    const VectorTable_t *vtable = (const VectorTable_t *)SLOT_A_BASE_ADDR;
-    if ((vtable->stack_pointer < 0x20000000UL) || (vtable->stack_pointer > 0x20018000UL))
+    const VectorTable_t *vtable = (const VectorTable_t *)APP_VECTOR_TABLE_ADDR;
+    if (!Bootloader_Is_Stack_Pointer_Valid(vtable->stack_pointer))
     {
         Debug("Stack pointer is invalid\n");
         return false;
     }
 
+    if (!Bootloader_Is_Reset_Handler_Valid(vtable->reset_handler))
+    {
+        Debug("Reset handler is invalid\n");
+        return false;
+    }
+
     // Application Verified Successfully
-    Debug("Application verifed\n");
+    Debug("Application verified\n");
     return true;
 }
 
 void Bootloader_Jump_To_App()
 {
     // Get Stack Pointer * Reset Handler address from Application Vector Table
-    uint32_t app_stack_pointer_addr = *((volatile uint32_t *)(SLOT_A_BASE_ADDR));
-    uint32_t app_reset_handler_addr = *((volatile uint32_t *)(SLOT_A_BASE_ADDR + 4UL));
+    const VectorTable_t *vtable = (const VectorTable_t *)APP_VECTOR_TABLE_ADDR;
+    uint32_t app_stack_pointer_addr = vtable->stack_pointer;
+    uint32_t app_reset_handler_addr = vtable->reset_handler;
 
     // Function pointer to Reset_Handler
     void (*app_reset_handler)(void);
@@ -56,12 +74,15 @@ void Bootloader_Jump_To_App()
     }
 
     // Set Application's Vector Table
-    SCB->VTOR = SLOT_A_BASE_ADDR;
+    SCB->VTOR = APP_VECTOR_TABLE_ADDR;
     __DSB();
     __ISB();
 
     // Set Stack Pointer
     __set_MSP(app_stack_pointer_addr);
+
+    // Let the application initialize its own tick and peripheral interrupts.
+    __enable_irq();
 
     // Start Application's Reset Handler
     app_reset_handler();

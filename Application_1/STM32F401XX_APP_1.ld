@@ -56,8 +56,10 @@ ENTRY(Reset_Handler)
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 96K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 64K
+FLASH (rx)      : ORIGIN = 0x8010000, LENGTH = 192K
 }
+
+APP_VTABLE_OFFSET = 0x200;
 
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
@@ -69,8 +71,15 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Define output sections */
 SECTIONS
 {
+  .app_header :
+  {
+      . = ALIGN(4);
+      KEEP(*(.app_header))
+      . = ALIGN(4);
+  } >FLASH
+
   /* The startup code goes first into FLASH */
-  .isr_vector :
+  .isr_vector ORIGIN(FLASH) + APP_VTABLE_OFFSET :
   {
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
