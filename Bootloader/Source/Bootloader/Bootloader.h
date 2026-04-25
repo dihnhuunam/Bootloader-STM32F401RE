@@ -7,9 +7,9 @@ extern "C"
 {
 #endif
 
-bool Bootloader_Verify_Slot();
-void Bootloader_Jump_To_App();
-void Bootloader_Default();
+    bool Bootloader_Verify_Slot();
+    void Bootloader_Jump_To_App();
+    void Bootloader_Default();
 
 #ifdef __cplusplus
 }
