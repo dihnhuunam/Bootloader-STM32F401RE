@@ -8,14 +8,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef struct
-{
-    uint32_t base_addr;
-    uint32_t end_addr;
-    uint32_t vector_table_addr;
-    uint32_t expected_crc32;
-} Bootloader_Slot_Info_t;
-
 static bool Bootloader_Get_Slot_Info(Bootloader_Slot_t slot, Bootloader_Slot_Info_t *slot_info)
 {
     if (slot_info == NULL)
