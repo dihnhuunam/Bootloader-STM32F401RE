@@ -31,10 +31,6 @@ extern "C"
         uint32_t reset_handler; // Reset Handler address
     } VectorTable_t;
 
-#define APP_HEADER_DEFINE(ver)                                                                                         \
-    const ImageHeader_t __app_header __attribute__((section(".app_header"), used)) = {                                 \
-        .magic = APP_MAGIC_NUMBER, .version = (ver), .crc32 = 0, .reserved = 0}
-
 #ifdef __cplusplus
 }
 #endif

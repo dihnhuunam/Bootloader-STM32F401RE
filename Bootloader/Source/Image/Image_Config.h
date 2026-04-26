@@ -365,7 +365,7 @@
  *
  * This value must be updated after each Slot A firmware build.
  */
-#define SLOT_A_CRC_32 0x24C13CC6
+#define SLOT_A_CRC_32 0x4EB9FF86
 
 /**
  * @brief Expected CRC32 value for Application Slot B.
