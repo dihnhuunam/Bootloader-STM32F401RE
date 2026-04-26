@@ -1,6 +1,7 @@
 #include "App.h"
 #include "Debug.h"
 #include "Image.h"
+#include "Image_Config.h"
 #include "Led.h"
 #include "stm32f4xx_hal.h"
 
