@@ -5,9 +5,9 @@
 
 void App_Start()
 {
-    if (Bootloader_Verify_Slot() == true)
+    if (Bootloader_Verify_Slot(Slot_A) == true)
     {
-        Bootloader_Jump_To_App();
+        Bootloader_Jump_To_App(Slot_A);
     }
     else
     {

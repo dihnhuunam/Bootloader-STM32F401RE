@@ -7,8 +7,14 @@ extern "C"
 {
 #endif
 
-    bool Bootloader_Verify_Slot();
-    void Bootloader_Jump_To_App();
+    typedef enum
+    {
+        Slot_A = 0,
+        Slot_B
+    } Bootloader_Slot_t;
+
+    bool Bootloader_Verify_Slot(Bootloader_Slot_t slot);
+    void Bootloader_Jump_To_App(Bootloader_Slot_t slot);
     void Bootloader_Default();
 
 #ifdef __cplusplus
