@@ -3,6 +3,7 @@
 #include "Image.h"
 #include "Image_Config.h"
 #include "Led.h"
+#include "crc32.h"
 
 #include "stm32f4xx_hal.h"
 #include <stdbool.h>
@@ -21,19 +22,47 @@ static bool Bootloader_Get_Slot_Info(Bootloader_Slot_t slot, Bootloader_Slot_Inf
         slot_info->base_addr = SLOT_A_BASE_ADDR;
         slot_info->end_addr = SLOT_A_END_ADDR;
         slot_info->vector_table_addr = SLOT_A_VECTOR_TABLE_ADDR;
-        slot_info->expected_crc32 = SLOT_A_CRC_32;
+        slot_info->calculated_crc32 = 0U;
         return true;
 
     case Slot_B:
         slot_info->base_addr = SLOT_B_BASE_ADDR;
         slot_info->end_addr = SLOT_B_END_ADDR;
         slot_info->vector_table_addr = SLOT_B_VECTOR_TABLE_ADDR;
-        slot_info->expected_crc32 = SLOT_B_CRC_32;
+        slot_info->calculated_crc32 = 0U;
         return true;
 
     default:
         return false;
     }
+}
+
+static bool Bootloader_Calculate_Slot_Crc32(const ImageHeader_t *header, Bootloader_Slot_Info_t *slot_info)
+{
+    Crc32_Status_t crc_status;
+    uint32_t max_image_size;
+
+    if ((header == NULL) || (slot_info == NULL))
+    {
+        return false;
+    }
+
+    max_image_size = slot_info->end_addr - slot_info->vector_table_addr;
+    if ((header->image_size == 0U) || (header->image_size > max_image_size))
+    {
+        Debug("Image size invalid: %lu\n", (unsigned long)header->image_size);
+        return false;
+    }
+
+    crc_status =
+        Crc32_Calculate_From_Flash(slot_info->vector_table_addr, header->image_size, &slot_info->calculated_crc32);
+    if (crc_status != CRC32_STATUS_OK)
+    {
+        Debug("CRC32 calculate failed: status=%d\n", (int)crc_status);
+        return false;
+    }
+
+    return true;
 }
 
 static bool Bootloader_Is_Stack_Pointer_Valid(uint32_t stack_pointer)
@@ -65,11 +94,15 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
         return false;
     }
 
-    // Verify Application Firmware's CRC32
-
-    if (header->crc32 != slot_info.expected_crc32)
+    if (!Bootloader_Calculate_Slot_Crc32(header, &slot_info))
     {
-        Debug("CRC32 incorrect!\n");
+        return false;
+    }
+
+    if (header->crc32 != slot_info.calculated_crc32)
+    {
+        Debug("CRC32 incorrect: header=0x%08lX calc=0x%08lX\n", (unsigned long)header->crc32,
+              (unsigned long)slot_info.calculated_crc32);
         return false;
     }
 

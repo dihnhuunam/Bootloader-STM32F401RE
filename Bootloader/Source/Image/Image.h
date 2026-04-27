@@ -13,7 +13,7 @@ extern "C"
         uint32_t magic;
         uint32_t version;
         uint32_t crc32;
-        uint32_t reserved;
+        uint32_t image_size;
     } ImageHeader_t;
 
     typedef struct __attribute__((packed))

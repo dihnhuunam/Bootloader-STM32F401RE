@@ -187,34 +187,6 @@
 #define SLOT_A_VECTOR_TABLE_ADDR (SLOT_A_BASE_ADDR + VTABLE_OFFSET)
 
 /**
- * @brief Address of the magic field in the Slot A application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_A_MAGIC_ADDR (SLOT_A_BASE_ADDR + 0x00U)
-
-/**
- * @brief Address of the CRC32 field in the Slot A application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_A_CRC_ADDR (SLOT_A_BASE_ADDR + 0x04U)
-
-/**
- * @brief Address of the firmware size field in the Slot A application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_A_FW_SIZE_ADDR (SLOT_A_BASE_ADDR + 0x08U)
-
-/**
- * @brief Address of the firmware version field in the Slot A application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_A_FW_VERSION_ADDR (SLOT_A_BASE_ADDR + 0x0CU)
-
-/**
  * @brief Base address of executable code in Application Slot A.
  *
  * This address is also the vector table address.
@@ -261,34 +233,6 @@
  * @brief Address of the vector table for Application Slot B.
  */
 #define SLOT_B_VECTOR_TABLE_ADDR (SLOT_B_BASE_ADDR + VTABLE_OFFSET)
-
-/**
- * @brief Address of the magic field in the Slot B application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_B_MAGIC_ADDR (SLOT_B_BASE_ADDR + 0x00U)
-
-/**
- * @brief Address of the CRC32 field in the Slot B application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_B_CRC_ADDR (SLOT_B_BASE_ADDR + 0x04U)
-
-/**
- * @brief Address of the firmware size field in the Slot B application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_B_FW_SIZE_ADDR (SLOT_B_BASE_ADDR + 0x08U)
-
-/**
- * @brief Address of the firmware version field in the Slot B application header.
- *
- * Size: 4 bytes.
- */
-#define SLOT_B_FW_VERSION_ADDR (SLOT_B_BASE_ADDR + 0x0CU)
 
 /**
  * @brief Base address of executable code in Application Slot B.

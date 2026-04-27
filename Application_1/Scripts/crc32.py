@@ -6,6 +6,7 @@ from pathlib import Path
 
 APP_HEADER_SIZE = 16
 APP_HEADER_CRC32_OFFSET = 8
+APP_HEADER_IMAGE_SIZE_OFFSET = 12
 
 
 def main():
@@ -37,6 +38,7 @@ def main():
 
         crc32 = zlib.crc32(payload) & 0xFFFFFFFF
         struct.pack_into("<I", raw, APP_HEADER_CRC32_OFFSET, crc32)
+        struct.pack_into("<I", raw, APP_HEADER_IMAGE_SIZE_OFFSET, len(payload))
 
         patched_path.write_bytes(raw)
         header_path.write_bytes(raw[:APP_HEADER_SIZE])
@@ -44,6 +46,7 @@ def main():
         print(f"Payload : {payload_path}")
         print(f"Size    : {len(payload)} bytes")
         print(f"CRC32   : 0x{crc32:08X}")
+        print(f"ImgSize : {len(payload)} bytes")
         print(f"BIN     : {patched_path}")
         print(f"Header  : {header_path}")
         return
