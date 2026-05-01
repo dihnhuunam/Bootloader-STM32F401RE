@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Debug/Debug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Led/Led.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Button/Button.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Bootloader/Bootloader.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Image/Image.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC/crc32.c
@@ -59,6 +60,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Debug
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Led
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Button
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Bootloader
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Image
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC

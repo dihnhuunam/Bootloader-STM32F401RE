@@ -127,6 +127,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
 void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
 {
+    Debug("Jump to Application\n");
     Bootloader_Slot_Info_t slot_info;
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))
