@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Bootloader",
+            "compileCommands": "${workspaceFolder}/Bootloader/build/Debug/compile_commands.json",
+            "compilerPath": "D:/STM32CubeIDE_2.1.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.14.3.rel1.win32_1.0.100.202602081740/tools/bin/arm-none-eabi-gcc.exe",
+            "intelliSenseMode": "linux-gcc-arm",
+            "cStandard": "gnu11"
+        }
+    ],
+    "version": 4
+}

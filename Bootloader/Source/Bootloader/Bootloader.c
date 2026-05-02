@@ -78,6 +78,14 @@ static bool Bootloader_Is_Reset_Handler_Valid(uint32_t reset_handler, const Boot
 
 bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 {
+#ifdef DEMO_ROLLBACK
+    if (slot == Slot_B)
+    {
+        Debug("[DEMO] Simulating Slot B failure (CRC mismatch).\n");
+        return false;
+    }
+#endif
+
     Bootloader_Slot_Info_t slot_info;
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))

@@ -16,6 +16,32 @@
 /* LED blink period during the wait window. */
 #define BLINK_PERIOD_MS 200U
 
+/**
+ * Verifies a slot and jumps to it if valid.  Returns only if verification
+ * fails; Bootloader_Jump_To_App() never returns on success.
+ */
+static void App_Try_Boot(Bootloader_Slot_t slot)
+{
+    if (Bootloader_Verify_Slot(slot) == true)
+    {
+        Bootloader_Jump_To_App(slot);
+    }
+}
+
+#ifdef DEMO_ROLLBACK
+/* Blocks for (on_ms + off_ms) * count ms, producing a distinct blink pattern. */
+static void App_Demo_Blink(uint32_t on_ms, uint32_t off_ms, uint32_t count)
+{
+    for (uint32_t i = 0U; i < count; i++)
+    {
+        Led_On();
+        HAL_Delay(on_ms);
+        Led_Off();
+        HAL_Delay(off_ms);
+    }
+}
+#endif /* DEMO_ROLLBACK */
+
 void App_Start()
 {
     Led_Init();
@@ -32,15 +58,33 @@ void App_Start()
 
         if (Button_IsHeldFor(BUTTON_HOLD_MS))
         {
-            Debug("Button held - booting Slot B.\n");
             Led_Off();
+            Debug("Button held - attempting Slot B.\n");
 
-            if (Bootloader_Verify_Slot(Slot_B) == true)
-            {
-                Bootloader_Jump_To_App(Slot_B);
-            }
+#ifdef DEMO_ROLLBACK
+            /* 3 short blinks: bootloader is about to try Slot B. */
+            App_Demo_Blink(100U, 100U, 3U);
+#endif
 
-            /* Slot B invalid - fall back to default error state. */
+            App_Try_Boot(Slot_B);
+
+            /* Slot B verification failed - roll back to Slot A. */
+            Debug("Slot B invalid. Rolling back to Slot A.\n");
+
+#ifdef DEMO_ROLLBACK
+            /* LED solid for 1 s: Slot B has failed. */
+            Led_On();
+            HAL_Delay(1000U);
+            Led_Off();
+            HAL_Delay(200U);
+
+            /* 5 rapid blinks: rollback in progress. */
+            App_Demo_Blink(50U, 50U, 5U);
+#endif
+
+            App_Try_Boot(Slot_A);
+
+            /* Both slots failed. */
             Bootloader_Default();
         }
     }
@@ -48,11 +92,6 @@ void App_Start()
     /* Wait window expired - boot Slot A. */
     Debug("Timeout - booting Slot A.\n");
     Led_Off();
-
-    if (Bootloader_Verify_Slot(Slot_A) == true)
-    {
-        Bootloader_Jump_To_App(Slot_A);
-    }
-
+    App_Try_Boot(Slot_A);
     Bootloader_Default();
 }

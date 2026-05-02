@@ -71,6 +71,10 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
+
+    # Enable rollback demo: forces Slot B to fail so the rollback path is exercised.
+    # Remove this line before flashing production firmware.
+    # DEMO_ROLLBACK
 )
 
 # Remove wrong libob.a library dependency when using cpp files
