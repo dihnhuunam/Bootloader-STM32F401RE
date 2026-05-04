@@ -51,6 +51,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Image/Image.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC/crc32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Flash/Flash.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/UartFirmwareUpdate/UartFirmwareUpdate.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/App/App.c
 )
 
@@ -63,6 +64,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Image
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Flash
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/UartFirmwareUpdate
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/App
 )
 
