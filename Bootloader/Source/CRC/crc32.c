@@ -4,8 +4,8 @@
  */
 #include "crc32.h"
 
-#include "Image_Config.h"
 #include "Debug.h"
+#include "Image_Config.h"
 
 #include <stdbool.h>
 #include <stddef.h>

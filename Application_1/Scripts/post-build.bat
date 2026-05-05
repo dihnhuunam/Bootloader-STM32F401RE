@@ -30,6 +30,7 @@ set "PAYLOAD_BIN=%OUT_DIR%\%TARGET_NAME%_payload.bin"
 set "PATCHED_BIN=%OUT_DIR%\%TARGET_NAME%_crc.bin"
 set "PATCHED_ELF=%OUT_DIR%\%TARGET_NAME%_crc.elf"
 set "HEADER_BIN=%OUT_DIR%\%TARGET_NAME%_app_header.bin"
+set "VERSION_JSON=%PROJECT_DIR%\version.json"
 
 if not exist "%ELF_FILE%" (
     echo ERROR: ELF file not found: "%ELF_FILE%"
@@ -44,6 +45,11 @@ if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
 "%PYTHON%" "%SCRIPT_DIR%crc32.py" ^
     --payload-bin "%PAYLOAD_BIN%" ^
     --raw-bin "%RAW_BIN%" ^
+    --patched-bin "%PATCHED_BIN%" ^
+    --header-bin "%HEADER_BIN%" || exit /b 1
+
+"%PYTHON%" "%SCRIPT_DIR%version.py" ^
+    --version-json "%VERSION_JSON%" ^
     --patched-bin "%PATCHED_BIN%" ^
     --header-bin "%HEADER_BIN%" || exit /b 1
 

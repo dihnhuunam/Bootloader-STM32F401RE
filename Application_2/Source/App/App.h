@@ -6,6 +6,12 @@ extern "C"
 {
 #endif
 
+    /**
+     * @brief Starts the application runtime.
+     *
+     * Confirms the current boot image in metadata when applicable, then enters
+     * the main application loop.
+     */
     void App_Start();
 
 #ifdef __cplusplus

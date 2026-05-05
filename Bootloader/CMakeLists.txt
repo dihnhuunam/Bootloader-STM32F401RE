@@ -52,6 +52,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC/crc32.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Flash/Flash.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/App/App.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Button/Button.c
 )
 
 # Add include paths
@@ -64,6 +65,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/CRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Flash
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/App
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Button
 )
 
 # Add project symbols (macros)
