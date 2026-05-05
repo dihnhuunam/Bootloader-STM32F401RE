@@ -12,12 +12,24 @@
 const ImageHeader_t __app_header __attribute__((section(".app_header"), used)) = {
     .magic = APP_MAGIC_NUMBER, .version = (0x00010000), .crc32 = 0x00000000, .image_size = 0x00000000};
 
+/**
+ * @brief Validates the boot metadata header and active slot field.
+ * @param metadata Metadata object copied from Flash.
+ * @return true if metadata has the expected magic and valid active slot.
+ * @return false otherwise.
+ */
 static bool App_Metadata_Is_Valid(const ImageMetadata_t *metadata)
 {
     return (metadata != NULL) && (metadata->magic == METADATA_MAGIC_NUMBER) &&
            ((metadata->active_slot == IMAGE_SLOT_A) || (metadata->active_slot == IMAGE_SLOT_B));
 }
 
+/**
+ * @brief Erases and writes the metadata record to Flash.
+ * @param metadata Metadata object to persist.
+ * @return true if erase and write completed successfully.
+ * @return false otherwise.
+ */
 static bool App_Metadata_Write(const ImageMetadata_t *metadata)
 {
     if (metadata == NULL)
@@ -40,6 +52,13 @@ static bool App_Metadata_Write(const ImageMetadata_t *metadata)
     return true;
 }
 
+/**
+ * @brief Confirms Application 1 as the successfully booted image.
+ *
+ * Slot A is confirmed when it is already the active slot or when it is the
+ * pending slot selected by the bootloader. Confirmation updates metadata to
+ * mark Slot A as active, clears pending/rollback state, and resets boot attempts.
+ */
 static void App_Confirm_Boot(void)
 {
     ImageMetadata_t metadata;
@@ -81,6 +100,12 @@ static void App_Confirm_Boot(void)
     }
 }
 
+/**
+ * @brief Starts the application runtime.
+ *
+ * Confirms the current boot image in metadata when applicable, then enters
+ * the main application loop.
+ */
 void App_Start()
 {
     App_Confirm_Boot();

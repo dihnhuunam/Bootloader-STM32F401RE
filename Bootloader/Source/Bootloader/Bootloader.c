@@ -11,6 +11,15 @@
 #include <stddef.h>
 #include <string.h>
 
+/**
+ * @brief Gets the fixed Flash layout information for a firmware slot.
+ * @param slot Slot to describe.
+ * @param
+ * slot_info Output slot layout information.
+ * @return true if the slot is valid and slot_info was filled.
+ * @return
+ * false if slot_info is NULL or the slot is invalid.
+ */
 static bool Bootloader_Get_Slot_Info(Bootloader_Slot_t slot, Bootloader_Slot_Info_t *slot_info)
 {
     if (slot_info == NULL)
@@ -37,6 +46,17 @@ static bool Bootloader_Get_Slot_Info(Bootloader_Slot_t slot, Bootloader_Slot_Inf
     }
 }
 
+/**
+ * @brief Calculates the CRC32 of a slot image payload.
+ * @param header Image header stored at the slot base
+ * address.
+ * @param slot_info Slot layout information.
+ * @param calculated_crc32 Output calculated CRC32 value.
+ *
+ * @return true if the image size is valid and CRC calculation succeeds.
+ * @return false if arguments are invalid,
+ * image size is invalid, or CRC calculation fails.
+ */
 static bool Bootloader_Calculate_Slot_Crc32(const ImageHeader_t *header, const Bootloader_Slot_Info_t *slot_info,
                                             uint32_t *calculated_crc32)
 {
@@ -65,32 +85,68 @@ static bool Bootloader_Calculate_Slot_Crc32(const ImageHeader_t *header, const B
     return true;
 }
 
+/**
+ * @brief Checks whether a metadata slot value maps to a supported firmware slot.
+ * @param slot Metadata slot value
+ * to validate.
+ * @return true if the slot is IMAGE_SLOT_A or IMAGE_SLOT_B.
+ * @return false otherwise.
+ */
 static bool Bootloader_Is_Metadata_Slot_Valid(uint8_t slot)
 {
     return (slot == IMAGE_SLOT_A) || (slot == IMAGE_SLOT_B);
 }
 
+/**
+ * @brief Converts a metadata slot value to a bootloader slot enum.
+ * @param slot Metadata slot value.
+ * @return
+ * Slot_B when slot is IMAGE_SLOT_B, otherwise Slot_A.
+ */
 static Bootloader_Slot_t Bootloader_Metadata_Slot_To_Bootloader_Slot(uint8_t slot)
 {
     return (slot == IMAGE_SLOT_B) ? Slot_B : Slot_A;
 }
 
+/**
+ * @brief Converts a bootloader slot enum to the metadata slot value.
+ * @param slot Bootloader slot enum.
+ *
+ * @return IMAGE_SLOT_B for Slot_B, otherwise IMAGE_SLOT_A.
+ */
 static uint8_t Bootloader_Slot_To_Metadata_Slot(Bootloader_Slot_t slot)
 {
     return (slot == Slot_B) ? IMAGE_SLOT_B : IMAGE_SLOT_A;
 }
 
+/**
+ * @brief Gets the opposite firmware slot.
+ * @param slot Current slot.
+ * @return Slot_A when input is Slot_B,
+ * otherwise Slot_B.
+ */
 static Bootloader_Slot_t Bootloader_Get_Other_Slot(Bootloader_Slot_t slot)
 {
     return (slot == Slot_B) ? Slot_A : Slot_B;
 }
 
+/**
+ * @brief Validates the persisted metadata header and active slot.
+ * @param metadata Metadata object copied from
+ * Flash.
+ * @return true if metadata has the expected magic and valid active slot.
+ * @return false otherwise.
+ */
 static bool Bootloader_Is_Metadata_Valid(const ImageMetadata_t *metadata)
 {
     return (metadata != NULL) && (metadata->magic == METADATA_MAGIC_NUMBER) &&
            Bootloader_Is_Metadata_Slot_Valid(metadata->active_slot);
 }
 
+/**
+ * @brief Copies boot metadata from Flash into RAM.
+ * @param metadata Destination metadata buffer.
+ */
 static void Bootloader_Read_Metadata(ImageMetadata_t *metadata)
 {
     if (metadata != NULL)
@@ -99,6 +155,13 @@ static void Bootloader_Read_Metadata(ImageMetadata_t *metadata)
     }
 }
 
+/**
+ * @brief Erases and writes the metadata record to Flash.
+ * @param metadata Metadata object to persist.
+ * @return
+ * true if erase and write completed successfully.
+ * @return false otherwise.
+ */
 static bool Bootloader_Write_Metadata(const ImageMetadata_t *metadata)
 {
     if (metadata == NULL)
@@ -121,6 +184,15 @@ static bool Bootloader_Write_Metadata(const ImageMetadata_t *metadata)
     return true;
 }
 
+/**
+ * @brief Verifies a slot and returns it as the selected boot slot.
+ * @param candidate Slot to verify.
+ * @param
+ * slot Output selected slot when verification succeeds.
+ * @return true if candidate verifies successfully.
+ * @return
+ * false otherwise.
+ */
 static bool Bootloader_Select_Verified_Slot(Bootloader_Slot_t candidate, Bootloader_Slot_t *slot)
 {
     if ((slot != NULL) && Bootloader_Verify_Slot(candidate))
@@ -132,6 +204,15 @@ static bool Bootloader_Select_Verified_Slot(Bootloader_Slot_t candidate, Bootloa
     return false;
 }
 
+/**
+ * @brief Initializes persistent metadata for a verified slot.
+ * @param slot Slot that has already passed image
+ * verification.
+ *
+ * The initialized metadata marks the slot as confirmed and uses the image
+ * header CRC/version for
+ * the matching slot record.
+ */
 static void Bootloader_Init_Metadata_For_Slot(Bootloader_Slot_t slot)
 {
     Bootloader_Slot_Info_t slot_info;
@@ -171,6 +252,17 @@ static void Bootloader_Init_Metadata_For_Slot(Bootloader_Slot_t slot)
     }
 }
 
+/**
+ * @brief Selects a verified rollback slot and updates metadata to confirmed state.
+ * @param metadata Metadata
+ * object to update and persist. May be NULL to only select the slot.
+ * @param rollback_slot Slot to verify and boot.
+
+ * * @param slot Output selected slot when rollback succeeds.
+ * @return true if rollback slot verifies successfully.
+ *
+ * @return false otherwise.
+ */
 static bool Bootloader_Rollback_To_Slot(ImageMetadata_t *metadata, Bootloader_Slot_t rollback_slot,
                                         Bootloader_Slot_t *slot)
 {
@@ -204,6 +296,14 @@ static bool Bootloader_Is_Reset_Handler_Valid(uint32_t reset_handler, const Boot
            (reset_handler < slot_info->end_addr) && ((reset_handler & 0x1U) != 0U);
 }
 
+/**
+ * @brief Verifies whether a firmware slot contains a bootable image.
+ * @param slot Slot to verify.
+ * @return true
+ * if image header, CRC, stack pointer, and reset handler are valid.
+ * @return false if the slot is invalid or
+ * verification fails.
+ */
 bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 {
     Bootloader_Slot_Info_t slot_info;
@@ -254,6 +354,13 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
     return true;
 }
 
+/**
+ * @brief Selects the firmware slot to boot according to metadata state.
+ * @param slot Output selected slot.
+ *
+ * @return true if a bootable slot was selected.
+ * @return false if no valid slot is available.
+ */
 bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
 {
     ImageMetadata_t metadata;
@@ -346,6 +453,10 @@ bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
     return false; /* Safe mode/recovery will be implemented later. */
 }
 
+/**
+ * @brief Transfers execution to the selected application slot.
+ * @param slot Slot to jump to.
+ */
 void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
 {
     Bootloader_Slot_Info_t slot_info;
@@ -395,6 +506,9 @@ void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
     app_reset_handler();
 }
 
+/**
+ * @brief Enters the default bootloader fallback loop.
+ */
 void Bootloader_Default()
 {
     Debug("Bootloader default\n");
