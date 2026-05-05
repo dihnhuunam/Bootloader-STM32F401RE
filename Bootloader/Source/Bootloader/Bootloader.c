@@ -4,12 +4,17 @@
 #include "Image.h"
 #include "Image_Config.h"
 #include "Led.h"
+#include "Button.h"
 #include "crc32.h"
+#include "usart.h"
 
 #include "stm32f4xx_hal.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+
+#define BOOTLOADER_BOOT_MODE_HOLD_TIME_MS 3000U
+#define BOOTLOADER_BUTTON_POLL_INTERVAL_MS 10U
 
 /**
  * @brief Gets the fixed Flash layout information for a firmware slot.
@@ -297,6 +302,27 @@ static bool Bootloader_Is_Reset_Handler_Valid(uint32_t reset_handler, const Boot
 }
 
 /**
+ * @brief Checks whether the user button is currently pressed.
+ * @return true if PC13 reads low.
+ * @return false otherwise.
+ */
+static bool Bootloader_Is_User_Button_Pressed(void)
+{
+    return Button_Is_Pressed();
+}
+
+/**
+ * @brief Receives one CLI command byte from the debug UART.
+ * @param command Output received command byte.
+ * @return true if a byte was received.
+ * @return false otherwise.
+ */
+static bool Bootloader_Cli_Read_Command(uint8_t *command)
+{
+    return (command != NULL) && (HAL_UART_Receive(&huart2, command, 1U, HAL_MAX_DELAY) == HAL_OK);
+}
+
+/**
  * @brief Verifies whether a firmware slot contains a bootable image.
  * @param slot Slot to verify.
  * @return true
@@ -451,6 +477,91 @@ bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
     }
 
     return false; /* Safe mode/recovery will be implemented later. */
+}
+
+/**
+ * @brief Checks whether Boot Mode should be entered.
+ * @return true if the user button is held for the required duration.
+ * @return false otherwise.
+ */
+bool Bootloader_Should_Enter_Boot_Mode(void)
+{
+    uint32_t held_time_ms = 0U;
+
+    if (!Bootloader_Is_User_Button_Pressed())
+    {
+        return false;
+    }
+    Led_On();
+    Debug("Hold USER button for 3 seconds to enter Boot Mode...\n");
+    while (held_time_ms < BOOTLOADER_BOOT_MODE_HOLD_TIME_MS)
+    {
+        if (!Bootloader_Is_User_Button_Pressed())
+        {
+            Debug("Boot Mode canceled\n");
+            return false;
+        }
+
+        HAL_Delay(BOOTLOADER_BUTTON_POLL_INTERVAL_MS);
+        held_time_ms += BOOTLOADER_BUTTON_POLL_INTERVAL_MS;
+    }
+
+    Debug("Entering Boot Mode\n");
+    return true;
+}
+
+/**
+ * @brief Runs the manual Boot Mode CLI.
+ *
+ * The CLI lets the user select Slot A or Slot B manually. If the selected
+ * slot verifies successfully, execution is transferred to that slot.
+ */
+void Bootloader_Run_Boot_Mode(void)
+{
+    uint8_t command;
+    Led_Off();
+    while (1)
+    {
+        Debug("\n=== Boot Mode ===\n");
+        Debug("1/a: Boot Slot A\n");
+        Debug("2/b: Boot Slot B\n");
+        Debug("r  : Resume normal boot\n");
+        Debug("> ");
+        HAL_Delay(10U);
+        if (!Bootloader_Cli_Read_Command(&command))
+        {
+            Debug("\nCLI read failed\n");
+            continue;
+        }
+
+        Debug("%c\n", command);
+
+        if ((command == '1') || (command == 'a') || (command == 'A'))
+        {
+            if (Bootloader_Verify_Slot(Slot_A))
+            {
+                Bootloader_Jump_To_App(Slot_A);
+            }
+            Debug("Slot A is not bootable\n");
+        }
+        else if ((command == '2') || (command == 'b') || (command == 'B'))
+        {
+            if (Bootloader_Verify_Slot(Slot_B))
+            {
+                Bootloader_Jump_To_App(Slot_B);
+            }
+            Debug("Slot B is not bootable\n");
+        }
+        else if ((command == 'r') || (command == 'R'))
+        {
+            Debug("Resume normal boot\n");
+            return;
+        }
+        else
+        {
+            Debug("Invalid command\n");
+        }
+    }
 }
 
 /**

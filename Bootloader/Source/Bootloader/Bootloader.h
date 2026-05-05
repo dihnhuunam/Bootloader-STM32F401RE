@@ -44,6 +44,21 @@ extern "C"
     bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot);
 
     /**
+     * @brief Checks whether Boot Mode should be entered.
+     * @return true if the user button is held for the required duration.
+     * @return false otherwise.
+     */
+    bool Bootloader_Should_Enter_Boot_Mode(void);
+
+    /**
+     * @brief Runs the manual Boot Mode CLI.
+     *
+     * The CLI lets the user select Slot A or Slot B manually. If the selected
+     * slot verifies successfully, execution is transferred to that slot.
+     */
+    void Bootloader_Run_Boot_Mode(void);
+
+    /**
      * @brief Transfers execution to the selected application slot.
      * @param slot Slot to jump to.
      */
