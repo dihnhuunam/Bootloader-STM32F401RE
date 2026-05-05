@@ -10,7 +10,7 @@
 #include <string.h>
 
 const ImageHeader_t __app_header __attribute__((section(".app_header"), used)) = {
-    .magic = APP_MAGIC_NUMBER, .version = (0x00010000), .crc32 = 0x00000000, .image_size = 0x00000000};
+    .magic = APP_MAGIC_NUMBER, .version = 0x00000000, .crc32 = 0x00000000, .image_size = 0x00000000};
 
 /**
  * @brief Validates the boot metadata header and active slot field.
@@ -108,12 +108,19 @@ static void App_Confirm_Boot(void)
  */
 void App_Start()
 {
+    const ImageHeader_t *image_header = (const ImageHeader_t *)SLOT_A_BASE_ADDR;
+    uint32_t version = image_header->version;
+    uint32_t version_major = (version >> 16) & 0xFFFFU;
+    uint32_t version_minor = (version >> 8) & 0xFFU;
+    uint32_t version_patch = version & 0xFFU;
+
     App_Confirm_Boot();
 
     while (1)
     {
         Led_Blink(3000);
-        Debug("Application Firmware 1\n");
+        Debug("Application Firmware 1 v%lu.%lu.%lu\n", (unsigned long)version_major, (unsigned long)version_minor,
+              (unsigned long)version_patch);
         HAL_Delay(3000);
     }
 }
