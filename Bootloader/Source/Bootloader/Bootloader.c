@@ -290,6 +290,125 @@ static bool Bootloader_Rollback_To_Slot(ImageMetadata_t *metadata, Bootloader_Sl
     return true;
 }
 
+static void Bootloader_Read_Ota_Request(OtaRequest_t *request)
+{
+    if (request != NULL)
+    {
+        memcpy(request, (const void *)OTA_REQUEST_BASE_ADDR, sizeof(*request));
+    }
+}
+
+static void Bootloader_Clear_Ota_Request(void)
+{
+    if (Flash_Erase(OTA_REQUEST_BASE_ADDR, OTA_REQUEST_SIZE) != FLASH_STATUS_OK)
+    {
+        Debug("OTA request erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+    }
+}
+
+static bool Bootloader_Is_Ota_Request_Header_Valid(const OtaRequest_t *request)
+{
+    return (request != NULL) && (request->magic == OTA_REQUEST_MAGIC) &&
+           Bootloader_Is_Metadata_Slot_Valid(request->target_slot);
+}
+
+static bool Bootloader_Commit_Ota_Request(const OtaRequest_t *request)
+{
+    ImageMetadata_t metadata;
+    Bootloader_Slot_t active_slot;
+    Bootloader_Slot_t target_slot;
+    Bootloader_Slot_Info_t target_info;
+    const ImageHeader_t *header;
+
+    if (!Bootloader_Is_Ota_Request_Header_Valid(request))
+    {
+        return false;
+    }
+
+    Bootloader_Read_Metadata(&metadata);
+    if (!Bootloader_Is_Metadata_Valid(&metadata))
+    {
+        Debug("OTA request ignored: metadata invalid\n");
+        Bootloader_Clear_Ota_Request();
+        return false;
+    }
+
+    target_slot = Bootloader_Metadata_Slot_To_Bootloader_Slot(request->target_slot);
+    active_slot = Bootloader_Metadata_Slot_To_Bootloader_Slot(metadata.active_slot);
+
+    if (!Bootloader_Get_Slot_Info(target_slot, &target_info))
+    {
+        Bootloader_Clear_Ota_Request();
+        return false;
+    }
+
+    header = (const ImageHeader_t *)target_info.base_addr;
+    if ((header->crc32 != request->image_crc32) || (header->image_size != request->image_size))
+    {
+        Debug("OTA request mismatch\n");
+        Bootloader_Clear_Ota_Request();
+        return false;
+    }
+
+    if (!Bootloader_Verify_Slot(target_slot))
+    {
+        Debug("OTA request target is not bootable\n");
+        Bootloader_Clear_Ota_Request();
+        return false;
+    }
+
+    if (target_slot == active_slot)
+    {
+        Debug("OTA request target is already active\n");
+        Bootloader_Clear_Ota_Request();
+        return true;
+    }
+
+    metadata.pending_slot = Bootloader_Slot_To_Metadata_Slot(target_slot);
+    metadata.rollback_slot = Bootloader_Slot_To_Metadata_Slot(active_slot);
+    metadata.boot_state = IMAGE_BOOT_STATE_PENDING_CONFIRM;
+    metadata.boot_attempts = 0U;
+    metadata.firmware_version = header->version;
+
+    if (target_slot == Slot_A)
+    {
+        metadata.slot_a_crc32 = header->crc32;
+    }
+    else
+    {
+        metadata.slot_b_crc32 = header->crc32;
+    }
+
+    if (!Bootloader_Write_Metadata(&metadata))
+    {
+        return false;
+    }
+
+    Bootloader_Clear_Ota_Request();
+    Debug("OTA request committed for Slot %c\n", (target_slot == Slot_A) ? 'A' : 'B');
+    return true;
+}
+
+static void Bootloader_Process_Ota_Request(void)
+{
+    OtaRequest_t request;
+
+    Bootloader_Read_Ota_Request(&request);
+    if (request.magic == 0xFFFFFFFFUL)
+    {
+        return;
+    }
+
+    if (!Bootloader_Is_Ota_Request_Header_Valid(&request))
+    {
+        Debug("Invalid OTA request\n");
+        Bootloader_Clear_Ota_Request();
+        return;
+    }
+
+    (void)Bootloader_Commit_Ota_Request(&request);
+}
+
 static bool Bootloader_Is_Stack_Pointer_Valid(uint32_t stack_pointer)
 {
     return (stack_pointer >= SRAM_START_ADDR) && (stack_pointer <= SRAM_END_ADDR) && ((stack_pointer & 0x7U) == 0U);
@@ -399,6 +518,8 @@ bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
     {
         return false;
     }
+
+    Bootloader_Process_Ota_Request();
 
     Bootloader_Read_Metadata(&metadata);
     if (!Bootloader_Is_Metadata_Valid(&metadata))

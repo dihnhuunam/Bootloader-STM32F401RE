@@ -4,6 +4,7 @@
 #include "Image.h"
 #include "Image_Config.h"
 #include "Led.h"
+#include "UartOTA.h"
 #include "stm32f4xx_hal.h"
 
 #include <stdbool.h>
@@ -118,6 +119,7 @@ void App_Start()
 
     while (1)
     {
+        UartOTA_Process(IMAGE_SLOT_A);
         Led_Blink(3000);
         Debug("Application Firmware 1 v%lu.%lu.%lu\n", (unsigned long)version_major, (unsigned long)version_minor,
               (unsigned long)version_patch);

@@ -1,0 +1,63 @@
+{
+    "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+      "cacheVariables": {}
+    },
+    {
+      "name": "SlotA-Debug",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_SLOT": "A"
+      }
+    },
+    {
+      "name": "SlotA-Release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "APP_SLOT": "A"
+      }
+    },
+    {
+      "name": "SlotB-Debug",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_SLOT": "B"
+      }
+    },
+    {
+      "name": "SlotB-Release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "APP_SLOT": "B"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "SlotA-Debug",
+      "configurePreset": "SlotA-Debug"
+    },
+    {
+      "name": "SlotA-Release",
+      "configurePreset": "SlotA-Release"
+    },
+    {
+      "name": "SlotB-Debug",
+      "configurePreset": "SlotB-Debug"
+    },
+        {
+            "name": "SlotB-Release",
+            "configurePreset": "SlotB-Release"
+        }
+    ]
+}

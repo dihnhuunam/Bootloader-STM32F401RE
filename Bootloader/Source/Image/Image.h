@@ -49,6 +49,15 @@ extern "C"
         uint32_t boot_attempts;
     } ImageMetadata_t;
 
+    typedef struct __attribute__((packed, aligned(4)))
+    {
+        uint32_t magic;
+        uint8_t target_slot;
+        uint8_t reserved[3];
+        uint32_t image_crc32;
+        uint32_t image_size;
+    } OtaRequest_t;
+
 #ifdef __cplusplus
 }
 #endif
