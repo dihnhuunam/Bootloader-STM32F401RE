@@ -158,7 +158,8 @@
 /**
  * @brief Base address of the OTA request record.
  *
- * The request is placed in Flash sector 3 so applications can erase/write it
+ * The request is placed in Flash sector 3 so applications can
+ * erase/write it
  * without erasing the main metadata record in sector 2.
  */
 #define OTA_REQUEST_BASE_ADDR (METADATA_BASE_ADDR + 0x00004000UL)

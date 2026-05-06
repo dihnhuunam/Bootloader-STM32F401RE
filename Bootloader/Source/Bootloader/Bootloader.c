@@ -1,14 +1,15 @@
 /**
  * @file Bootloader.c
  * @brief Bootloader slot selection, OTA request commit, rollback, and jump implementation.
+
  */
 #include "Bootloader.h"
+#include "Button.h"
 #include "Debug.h"
 #include "Flash.h"
 #include "Image.h"
 #include "Image_Config.h"
 #include "Led.h"
-#include "Button.h"
 #include "crc32.h"
 #include "usart.h"
 
