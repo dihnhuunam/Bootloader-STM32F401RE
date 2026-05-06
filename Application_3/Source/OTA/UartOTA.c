@@ -226,9 +226,7 @@ static bool UartOTA_Handle_Update(uint8_t active_slot)
     }
 
     (void)UartOTA_Send_Response(UART_OTA_ACK);
-    Debug("OTA image stored for Slot %c, rebooting\n", (target_slot.slot == IMAGE_SLOT_A) ? 'A' : 'B');
-    HAL_Delay(100U);
-    NVIC_SystemReset();
+    Debug("OTA image stored for Slot %c, pending next reset\n", (target_slot.slot == IMAGE_SLOT_A) ? 'A' : 'B');
     return true;
 }
 
@@ -255,8 +253,9 @@ void UartOTA_Process(uint8_t active_slot)
     if (!UartOTA_Handle_Update(active_slot))
     {
         Debug("UART OTA failed\n");
-        UartOTA_Start_Receive_IT();
     }
+
+    UartOTA_Start_Receive_IT();
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
