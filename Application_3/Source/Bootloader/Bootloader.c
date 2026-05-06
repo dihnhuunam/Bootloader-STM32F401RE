@@ -1,3 +1,7 @@
+/**
+ * @file Bootloader.c
+ * @brief Application-side boot slot verification and jump implementation.
+ */
 #include "Bootloader.h"
 #include "Debug.h"
 #include "Image.h"

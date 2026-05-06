@@ -1,3 +1,7 @@
+/**
+ * @file App.c
+ * @brief Application runtime, boot confirmation, and OTA polling loop.
+ */
 #include "App.h"
 #include "Debug.h"
 #include "Flash.h"

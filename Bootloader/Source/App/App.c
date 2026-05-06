@@ -1,3 +1,7 @@
+/**
+ * @file App.c
+ * @brief Bootloader startup flow and boot slot dispatch.
+ */
 #include "App.h"
 #include "Bootloader.h"
 

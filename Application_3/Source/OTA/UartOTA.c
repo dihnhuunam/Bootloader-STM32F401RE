@@ -1,3 +1,7 @@
+/**
+ * @file UartOTA.c
+ * @brief UART OTA receiver using START/ACK/NACK block flow control.
+ */
 #include "UartOTA.h"
 
 #include "Debug.h"
@@ -31,11 +35,20 @@ static uint8_t s_uartota_start_byte;
 static volatile bool s_uartota_start_requested = false;
 static volatile bool s_uartota_start_rx_active = false;
 
+/**
+ * @brief Sends a one-byte OTA flow-control response.
+ * @param response Response byte, usually UART_OTA_ACK or UART_OTA_NACK.
+ * @return true if the byte was transmitted.
+ * @return false if UART transmit failed.
+ */
 static bool UartOTA_Send_Response(uint8_t response)
 {
     return HAL_UART_Transmit(&huart1, &response, 1U, UART_OTA_RX_TIMEOUT_MS) == HAL_OK;
 }
 
+/**
+ * @brief Arms interrupt reception for one OTA START byte.
+ */
 static void UartOTA_Start_Receive_IT(void)
 {
     if (!s_uartota_start_rx_active)
@@ -48,6 +61,13 @@ static void UartOTA_Start_Receive_IT(void)
     }
 }
 
+/**
+ * @brief Selects the slot that is not currently running.
+ * @param active_slot Current image slot value.
+ * @param slot_info Output inactive slot layout.
+ * @return true when active_slot is valid and slot_info was filled.
+ * @return false on invalid arguments or unknown slot value.
+ */
 static bool UartOTA_Get_Inactive_Slot(uint8_t active_slot, UartOTA_SlotInfo_t *slot_info)
 {
     if (slot_info == NULL)
@@ -74,6 +94,13 @@ static bool UartOTA_Get_Inactive_Slot(uint8_t active_slot, UartOTA_SlotInfo_t *s
     return false;
 }
 
+/**
+ * @brief Receives an exact number of bytes from the OTA UART.
+ * @param data Destination buffer.
+ * @param length Number of bytes to receive.
+ * @return true if all bytes were received before timeout.
+ * @return false on UART timeout or error.
+ */
 static bool UartOTA_Read_Exact(uint8_t *data, uint32_t length)
 {
     while (length > 0U)
@@ -92,6 +119,14 @@ static bool UartOTA_Read_Exact(uint8_t *data, uint32_t length)
     return true;
 }
 
+/**
+ * @brief Receives OTA image data, writes it to Flash, and validates its header.
+ * @param slot_info Target inactive slot selected by the running firmware.
+ * @param image_size Number of bytes to receive and program.
+ * @param image_header Output header copied from the received image.
+ * @return true if the image was received, written, and validated.
+ * @return false on UART, Flash, or image validation failure.
+ */
 static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info, uint32_t image_size,
                                             ImageHeader_t *image_header)
 {
@@ -154,6 +189,13 @@ static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info,
     return true;
 }
 
+/**
+ * @brief Writes an OTA request record for the bootloader to process on next reset.
+ * @param slot_info Slot containing the newly written image.
+ * @param image_header Header of the newly written image.
+ * @return true if the request was erased and written successfully.
+ * @return false if Flash erase or write failed.
+ */
 static bool UartOTA_Write_Request(const UartOTA_SlotInfo_t *slot_info, const ImageHeader_t *image_header)
 {
     OtaRequest_t request = {
@@ -179,6 +221,12 @@ static bool UartOTA_Write_Request(const UartOTA_SlotInfo_t *slot_info, const Ima
     return true;
 }
 
+/**
+ * @brief Runs one MCU-driven OTA transaction.
+ * @param active_slot Current running image slot.
+ * @return true if the inactive slot was updated and an OTA request was written.
+ * @return false on protocol, UART, Flash, or image validation failure.
+ */
 static bool UartOTA_Handle_Update(uint8_t active_slot)
 {
     UartOTA_SlotInfo_t target_slot;
@@ -230,6 +278,9 @@ static bool UartOTA_Handle_Update(uint8_t active_slot)
     return true;
 }
 
+/**
+ * @brief Arms the OTA receiver for a future START byte.
+ */
 void UartOTA_Init(void)
 {
     s_uartota_start_requested = false;
@@ -237,6 +288,10 @@ void UartOTA_Init(void)
     UartOTA_Start_Receive_IT();
 }
 
+/**
+ * @brief Processes a pending START byte and performs OTA if requested.
+ * @param active_slot Current running image slot.
+ */
 void UartOTA_Process(uint8_t active_slot)
 {
     if (!s_uartota_start_requested)
@@ -258,6 +313,10 @@ void UartOTA_Process(uint8_t active_slot)
     UartOTA_Start_Receive_IT();
 }
 
+/**
+ * @brief HAL callback invoked when the START byte interrupt receive completes.
+ * @param huart UART handle that completed reception.
+ */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance != USART1)
@@ -275,6 +334,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     UartOTA_Start_Receive_IT();
 }
 
+/**
+ * @brief HAL callback invoked when UART reception reports an error.
+ * @param huart UART handle that reported an error.
+ */
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)

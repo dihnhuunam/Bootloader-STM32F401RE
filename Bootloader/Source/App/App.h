@@ -1,3 +1,7 @@
+/**
+ * @file App.h
+ * @brief Bootloader application entry point.
+ */
 #ifndef APP_H
 #define APP_H
 
@@ -6,6 +10,9 @@ extern "C"
 {
 #endif
 
+    /**
+     * @brief Starts the bootloader application flow.
+     */
     void App_Start();
 
 #ifdef __cplusplus
