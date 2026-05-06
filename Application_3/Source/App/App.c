@@ -131,6 +131,7 @@ void App_Start()
     uint32_t version_patch = version & 0xFFU;
 
     App_Confirm_Boot();
+    UartOTA_Init();
 
     while (1)
     {
