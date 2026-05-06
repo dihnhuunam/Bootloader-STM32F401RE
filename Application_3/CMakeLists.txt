@@ -35,6 +35,8 @@ else()
     message(FATAL_ERROR "APP_SLOT must be A or B")
 endif()
 
+option(APP_ROLLBACK_DEMO_FAULT "Build a firmware image that resets before boot confirmation" OFF)
+
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -85,6 +87,12 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
     APP_IMAGE_SLOT=${APP_IMAGE_SLOT_VALUE}
 )
+
+if(APP_ROLLBACK_DEMO_FAULT)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
+        APP_ROLLBACK_DEMO_FAULT=1
+    )
+endif()
 
 # Remove wrong libob.a library dependency when using cpp files
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)

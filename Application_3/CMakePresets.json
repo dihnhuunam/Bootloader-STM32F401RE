@@ -18,6 +18,15 @@
       }
     },
     {
+      "name": "SlotA-Debug-Fault",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_SLOT": "A",
+        "APP_ROLLBACK_DEMO_FAULT": "ON"
+      }
+    },
+    {
       "name": "SlotA-Release",
       "inherits": "default",
       "cacheVariables": {
@@ -31,6 +40,15 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "APP_SLOT": "B"
+      }
+    },
+    {
+      "name": "SlotB-Debug-Fault",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "APP_SLOT": "B",
+        "APP_ROLLBACK_DEMO_FAULT": "ON"
       }
     },
     {
@@ -48,12 +66,20 @@
       "configurePreset": "SlotA-Debug"
     },
     {
+      "name": "SlotA-Debug-Fault",
+      "configurePreset": "SlotA-Debug-Fault"
+    },
+    {
       "name": "SlotA-Release",
       "configurePreset": "SlotA-Release"
     },
     {
       "name": "SlotB-Debug",
       "configurePreset": "SlotB-Debug"
+    },
+    {
+      "name": "SlotB-Debug-Fault",
+      "configurePreset": "SlotB-Debug-Fault"
     },
         {
             "name": "SlotB-Release",

@@ -134,6 +134,12 @@ void App_Start()
     uint32_t version_minor = (version >> 8) & 0xFFU;
     uint32_t version_patch = version & 0xFFU;
 
+#if defined(APP_ROLLBACK_DEMO_FAULT) && (APP_ROLLBACK_DEMO_FAULT != 0)
+    Debug("Application 3 Slot %s rollback demo fault before boot confirm\n", APP_SLOT_LABEL);
+    HAL_Delay(100U);
+    NVIC_SystemReset();
+#endif
+
     App_Confirm_Boot();
     UartOTA_Init();
 
