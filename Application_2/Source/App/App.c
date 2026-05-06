@@ -1,9 +1,14 @@
+/**
+ * @file App.c
+ * @brief Slot B application runtime, boot confirmation, and OTA polling loop.
+ */
 #include "App.h"
 #include "Debug.h"
 #include "Flash.h"
 #include "Image.h"
 #include "Image_Config.h"
 #include "Led.h"
+#include "UartOTA.h"
 #include "stm32f4xx_hal.h"
 
 #include <stdbool.h>
@@ -115,9 +120,11 @@ void App_Start()
     uint32_t version_patch = version & 0xFFU;
 
     App_Confirm_Boot();
+    UartOTA_Init();
 
     while (1)
     {
+        UartOTA_Process(IMAGE_SLOT_B);
         Led_Blink(3000);
         Debug("Application Firmware 2 v%lu.%lu.%lu\n", (unsigned long)version_major, (unsigned long)version_minor,
               (unsigned long)version_patch);

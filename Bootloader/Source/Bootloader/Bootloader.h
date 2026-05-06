@@ -1,3 +1,7 @@
+/**
+ * @file Bootloader.h
+ * @brief Bootloader slot selection, verification, boot mode, and jump APIs.
+ */
 #ifndef BOOTLOADER_H
 #define BOOTLOADER_H
 

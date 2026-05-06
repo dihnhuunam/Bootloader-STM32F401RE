@@ -155,6 +155,10 @@
  */
 #define METADATA_MAGIC_NUMBER 0xA5A5A5A5UL
 
+#define OTA_REQUEST_BASE_ADDR (METADATA_BASE_ADDR + 0x00004000UL)
+#define OTA_REQUEST_SIZE 0x00004000UL
+#define OTA_REQUEST_MAGIC 0x41544F55UL
+
 /* -------------------------------------------------------------------------- */
 /* Application Slot A                                                         */
 /* -------------------------------------------------------------------------- */

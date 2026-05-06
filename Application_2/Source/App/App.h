@@ -1,3 +1,7 @@
+/**
+ * @file App.h
+ * @brief Application runtime entry point.
+ */
 #ifndef APP_H
 #define APP_H
 
