@@ -5,7 +5,7 @@ set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%..") do set "PROJECT_DIR=%%~fI"
 
 if "%~1"=="" (
-    set "ELF_FILE=%PROJECT_DIR%\build\SlotA-Debug\Application_3_SlotA.elf"
+    set "ELF_FILE=%PROJECT_DIR%\build\SlotA-Debug\Application_SlotA.elf"
 ) else (
     set "ELF_FILE=%~1"
 )
@@ -17,7 +17,7 @@ if "%~2"=="" (
 )
 
 if "%~3"=="" (
-    set "TARGET_NAME=Application_3"
+    set "TARGET_NAME=Application"
 ) else (
     set "TARGET_NAME=%~3"
 )

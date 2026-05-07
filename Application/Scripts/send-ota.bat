@@ -14,7 +14,7 @@ if "%~1"=="" (
 set "PORT=%~1"
 
 if "%~2"=="" (
-    set "PACKET=%PROJECT_DIR%\build\Application_3_ota_packet.bin"
+    set "PACKET=%PROJECT_DIR%\build\Application_ota_packet.bin"
 ) else (
     set "PACKET=%~2"
 )

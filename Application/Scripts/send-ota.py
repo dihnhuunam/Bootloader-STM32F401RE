@@ -71,7 +71,7 @@ def main():
     parser = argparse.ArgumentParser(description="Send combined OTA packet to MCU over UART")
     parser.add_argument("--port", required=True, help="Serial port, for example COM5")
     parser.add_argument("--baudrate", type=int, default=115200, help="UART baudrate")
-    parser.add_argument("--packet", required=True, help="Path to Application_3_ota_packet.bin")
+    parser.add_argument("--packet", required=True, help="Path to Application_ota_packet.bin")
     parser.add_argument("--block-size", type=int, default=BLOCK_SIZE, help="Write block size")
     parser.add_argument("--startup-delay", type=float, default=0.2, help="Delay after opening port in seconds")
     parser.add_argument("--response-timeout", type=float, default=15.0, help="ACK/NACK response timeout in seconds")

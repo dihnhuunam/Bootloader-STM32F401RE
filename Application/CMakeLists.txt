@@ -19,7 +19,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Set the project name
-set(CMAKE_PROJECT_NAME Application_3)
+set(CMAKE_PROJECT_NAME Application)
 
 if(NOT DEFINED APP_SLOT)
     set(APP_SLOT "A")
