@@ -57,7 +57,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))
     {
-        Debug("Invalid boot slot\n");
+        Debug(DEBUG_LOG_PREFIX "Invalid boot slot\n");
         return false;
     }
 
@@ -65,7 +65,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (header->magic != APP_MAGIC_NUMBER)
     {
-        Debug("Magic number incorrect!\n");
+        Debug(DEBUG_LOG_PREFIX "Magic number incorrect!\n");
         return false;
     }
 
@@ -73,7 +73,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (header->crc32 != slot_info.expected_crc32)
     {
-        Debug("CRC32 incorrect!\n");
+        Debug(DEBUG_LOG_PREFIX "CRC32 incorrect!\n");
         return false;
     }
 
@@ -81,18 +81,18 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
     const VectorTable_t *vtable = (const VectorTable_t *)slot_info.vector_table_addr;
     if (!Bootloader_Is_Stack_Pointer_Valid(vtable->stack_pointer))
     {
-        Debug("Stack pointer is invalid\n");
+        Debug(DEBUG_LOG_PREFIX "Stack pointer is invalid\n");
         return false;
     }
 
     if (!Bootloader_Is_Reset_Handler_Valid(vtable->reset_handler, &slot_info))
     {
-        Debug("Reset handler is invalid\n");
+        Debug(DEBUG_LOG_PREFIX "Reset handler is invalid\n");
         return false;
     }
 
     // Application Verified Successfully
-    Debug("Application verified\n");
+    Debug(DEBUG_LOG_PREFIX "Application verified\n");
     return true;
 }
 
@@ -102,7 +102,7 @@ void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))
     {
-        Debug("Invalid boot slot\n");
+        Debug(DEBUG_LOG_PREFIX "Invalid boot slot\n");
         return;
     }
 
@@ -147,7 +147,7 @@ void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
 
 void Bootloader_Default()
 {
-    Debug("Bootloader default\n");
+    Debug(DEBUG_LOG_PREFIX "Bootloader default\n");
     while (1)
     {
         Led_Blink(200);

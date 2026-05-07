@@ -44,13 +44,13 @@ static bool App_Metadata_Write(const ImageMetadata_t *metadata)
 
     if (Flash_Erase(METADATA_BASE_ADDR, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
     if (Flash_Write(METADATA_BASE_ADDR, (const uint8_t *)metadata, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
@@ -101,7 +101,7 @@ static void App_Confirm_Boot(void)
 
     if (App_Metadata_Write(&metadata))
     {
-        Debug("Application 2 boot confirmed\n");
+        Debug(DEBUG_LOG_PREFIX "Application 2 boot confirmed\n");
     }
 }
 
@@ -126,7 +126,7 @@ void App_Start()
     {
         UartOTA_Process(IMAGE_SLOT_B);
         Led_Blink(3000);
-        Debug("Application Firmware 2 v%lu.%lu.%lu\n", (unsigned long)version_major, (unsigned long)version_minor,
+        Debug(DEBUG_LOG_PREFIX "Application Firmware 2 v%lu.%lu.%lu\n", (unsigned long)version_major, (unsigned long)version_minor,
               (unsigned long)version_patch);
         HAL_Delay(3000);
     }

@@ -81,14 +81,14 @@ static bool Bootloader_Calculate_Slot_Crc32(const ImageHeader_t *header, const B
     max_image_size = slot_info->end_addr - slot_info->vector_table_addr;
     if ((header->image_size == 0U) || (header->image_size > max_image_size))
     {
-        Debug("Image size invalid: %lu\n", (unsigned long)header->image_size);
+        Debug(DEBUG_LOG_PREFIX "Image size invalid: %lu\n", (unsigned long)header->image_size);
         return false;
     }
 
     crc_status = Crc32_Calculate_From_Flash(slot_info->vector_table_addr, header->image_size, calculated_crc32);
     if (crc_status != CRC32_STATUS_OK)
     {
-        Debug("CRC32 calculate failed: status=%d\n", (int)crc_status);
+        Debug(DEBUG_LOG_PREFIX "CRC32 calculate failed: status=%d\n", (int)crc_status);
         return false;
     }
 
@@ -181,13 +181,13 @@ static bool Bootloader_Write_Metadata(const ImageMetadata_t *metadata)
 
     if (Flash_Erase(METADATA_BASE_ADDR, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
     if (Flash_Write(METADATA_BASE_ADDR, (const uint8_t *)metadata, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
@@ -258,7 +258,7 @@ static void Bootloader_Init_Metadata_For_Slot(Bootloader_Slot_t slot)
 
     if (Bootloader_Write_Metadata(&metadata))
     {
-        Debug("Metadata initialized for Slot %c\n", (slot == Slot_A) ? 'A' : 'B');
+        Debug(DEBUG_LOG_PREFIX "Metadata initialized for Slot %c\n", (slot == Slot_A) ? 'A' : 'B');
     }
 }
 
@@ -291,7 +291,7 @@ static bool Bootloader_Rollback_To_Slot(ImageMetadata_t *metadata, Bootloader_Sl
         (void)Bootloader_Write_Metadata(metadata);
     }
 
-    Debug("Rollback slot selected\n");
+    Debug(DEBUG_LOG_PREFIX "Rollback slot selected\n");
     return true;
 }
 
@@ -307,7 +307,7 @@ static void Bootloader_Clear_Ota_Request(void)
 {
     if (Flash_Erase(OTA_REQUEST_BASE_ADDR, OTA_REQUEST_SIZE) != FLASH_STATUS_OK)
     {
-        Debug("OTA request erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "OTA request erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
     }
 }
 
@@ -333,7 +333,7 @@ static bool Bootloader_Commit_Ota_Request(const OtaRequest_t *request)
     Bootloader_Read_Metadata(&metadata);
     if (!Bootloader_Is_Metadata_Valid(&metadata))
     {
-        Debug("OTA request ignored: metadata invalid\n");
+        Debug(DEBUG_LOG_PREFIX "OTA request ignored: metadata invalid\n");
         Bootloader_Clear_Ota_Request();
         return false;
     }
@@ -350,21 +350,21 @@ static bool Bootloader_Commit_Ota_Request(const OtaRequest_t *request)
     header = (const ImageHeader_t *)target_info.base_addr;
     if ((header->crc32 != request->image_crc32) || (header->image_size != request->image_size))
     {
-        Debug("OTA request mismatch\n");
+        Debug(DEBUG_LOG_PREFIX "OTA request mismatch\n");
         Bootloader_Clear_Ota_Request();
         return false;
     }
 
     if (!Bootloader_Verify_Slot(target_slot))
     {
-        Debug("OTA request target is not bootable\n");
+        Debug(DEBUG_LOG_PREFIX "OTA request target is not bootable\n");
         Bootloader_Clear_Ota_Request();
         return false;
     }
 
     if (target_slot == active_slot)
     {
-        Debug("OTA request target is already active\n");
+        Debug(DEBUG_LOG_PREFIX "OTA request target is already active\n");
         Bootloader_Clear_Ota_Request();
         return true;
     }
@@ -390,7 +390,7 @@ static bool Bootloader_Commit_Ota_Request(const OtaRequest_t *request)
     }
 
     Bootloader_Clear_Ota_Request();
-    Debug("OTA request committed for Slot %c\n", (target_slot == Slot_A) ? 'A' : 'B');
+    Debug(DEBUG_LOG_PREFIX "OTA request committed for Slot %c\n", (target_slot == Slot_A) ? 'A' : 'B');
     return true;
 }
 
@@ -406,7 +406,7 @@ static void Bootloader_Process_Ota_Request(void)
 
     if (!Bootloader_Is_Ota_Request_Header_Valid(&request))
     {
-        Debug("Invalid OTA request\n");
+        Debug(DEBUG_LOG_PREFIX "Invalid OTA request\n");
         Bootloader_Clear_Ota_Request();
         return;
     }
@@ -461,7 +461,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))
     {
-        Debug("Invalid boot slot\n");
+        Debug(DEBUG_LOG_PREFIX "Invalid boot slot\n");
         return false;
     }
 
@@ -469,7 +469,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (header->magic != APP_MAGIC_NUMBER)
     {
-        Debug("Magic number incorrect!\n");
+        Debug(DEBUG_LOG_PREFIX "Magic number incorrect!\n");
         return false;
     }
 
@@ -480,7 +480,7 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
 
     if (header->crc32 != calculated_crc32)
     {
-        Debug("CRC32 incorrect: header=0x%08lX calc=0x%08lX\n", (unsigned long)header->crc32,
+        Debug(DEBUG_LOG_PREFIX "CRC32 incorrect: header=0x%08lX calc=0x%08lX\n", (unsigned long)header->crc32,
               (unsigned long)calculated_crc32);
         return false;
     }
@@ -489,18 +489,18 @@ bool Bootloader_Verify_Slot(Bootloader_Slot_t slot)
     const VectorTable_t *vtable = (const VectorTable_t *)slot_info.vector_table_addr;
     if (!Bootloader_Is_Stack_Pointer_Valid(vtable->stack_pointer))
     {
-        Debug("Stack pointer is invalid\n");
+        Debug(DEBUG_LOG_PREFIX "Stack pointer is invalid\n");
         return false;
     }
 
     if (!Bootloader_Is_Reset_Handler_Valid(vtable->reset_handler, &slot_info))
     {
-        Debug("Reset handler is invalid\n");
+        Debug(DEBUG_LOG_PREFIX "Reset handler is invalid\n");
         return false;
     }
 
     // Application Verified Successfully
-    Debug("Application verified\n");
+    Debug(DEBUG_LOG_PREFIX "Application verified\n");
     return true;
 }
 
@@ -529,7 +529,7 @@ bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
     Bootloader_Read_Metadata(&metadata);
     if (!Bootloader_Is_Metadata_Valid(&metadata))
     {
-        Debug("Metadata invalid, fallback to available slot\n");
+        Debug(DEBUG_LOG_PREFIX "Metadata invalid, fallback to available slot\n");
         if (Bootloader_Select_Verified_Slot(Slot_A, slot))
         {
             Bootloader_Init_Metadata_For_Slot(Slot_A);
@@ -555,7 +555,7 @@ bool Bootloader_Select_Boot_Slot(Bootloader_Slot_t *slot)
 
         if (metadata.boot_attempts >= METADATA_MAX_BOOT_ATTEMPTS)
         {
-            Debug("Pending image exceeded boot attempts\n");
+            Debug(DEBUG_LOG_PREFIX "Pending image exceeded boot attempts\n");
             rollback_slot = Bootloader_Is_Metadata_Slot_Valid(metadata.rollback_slot)
                                 ? Bootloader_Metadata_Slot_To_Bootloader_Slot(metadata.rollback_slot)
                                 : active_slot;
@@ -619,12 +619,12 @@ bool Bootloader_Should_Enter_Boot_Mode(void)
         return false;
     }
     Led_On();
-    Debug("Hold USER button for 3 seconds to enter Boot Mode...\n");
+    Debug(DEBUG_LOG_PREFIX "Hold USER button for 3 seconds to enter Boot Mode...\n");
     while (held_time_ms < BOOTLOADER_BOOT_MODE_HOLD_TIME_MS)
     {
         if (!Bootloader_Is_User_Button_Pressed())
         {
-            Debug("Boot Mode canceled\n");
+            Debug(DEBUG_LOG_PREFIX "Boot Mode canceled\n");
             return false;
         }
 
@@ -632,7 +632,7 @@ bool Bootloader_Should_Enter_Boot_Mode(void)
         held_time_ms += BOOTLOADER_BUTTON_POLL_INTERVAL_MS;
     }
 
-    Debug("Entering Boot Mode\n");
+    Debug(DEBUG_LOG_PREFIX "Entering Boot Mode\n");
     return true;
 }
 
@@ -648,19 +648,19 @@ void Bootloader_Run_Boot_Mode(void)
     Led_Off();
     while (1)
     {
-        Debug("\n=== Boot Mode ===\n");
-        Debug("1/a: Boot Slot A\n");
-        Debug("2/b: Boot Slot B\n");
-        Debug("r  : Resume normal boot\n");
-        Debug("> ");
+        Debug(DEBUG_LOG_PREFIX "\n=== Boot Mode ===\n");
+        Debug(DEBUG_LOG_PREFIX "1/a: Boot Slot A\n");
+        Debug(DEBUG_LOG_PREFIX "2/b: Boot Slot B\n");
+        Debug(DEBUG_LOG_PREFIX "r  : Resume normal boot\n");
+        Debug(DEBUG_LOG_PREFIX "> ");
         HAL_Delay(10U);
         if (!Bootloader_Cli_Read_Command(&command))
         {
-            Debug("\nCLI read failed\n");
+            Debug(DEBUG_LOG_PREFIX "\nCLI read failed\n");
             continue;
         }
 
-        Debug("%c\n", command);
+        Debug(DEBUG_LOG_PREFIX "%c\n", command);
 
         if ((command == '1') || (command == 'a') || (command == 'A'))
         {
@@ -668,7 +668,7 @@ void Bootloader_Run_Boot_Mode(void)
             {
                 Bootloader_Jump_To_App(Slot_A);
             }
-            Debug("Slot A is not bootable\n");
+            Debug(DEBUG_LOG_PREFIX "Slot A is not bootable\n");
         }
         else if ((command == '2') || (command == 'b') || (command == 'B'))
         {
@@ -676,16 +676,16 @@ void Bootloader_Run_Boot_Mode(void)
             {
                 Bootloader_Jump_To_App(Slot_B);
             }
-            Debug("Slot B is not bootable\n");
+            Debug(DEBUG_LOG_PREFIX "Slot B is not bootable\n");
         }
         else if ((command == 'r') || (command == 'R'))
         {
-            Debug("Resume normal boot\n");
+            Debug(DEBUG_LOG_PREFIX "Resume normal boot\n");
             return;
         }
         else
         {
-            Debug("Invalid command\n");
+            Debug(DEBUG_LOG_PREFIX "Invalid command\n");
         }
     }
 }
@@ -700,7 +700,7 @@ void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
 
     if (!Bootloader_Get_Slot_Info(slot, &slot_info))
     {
-        Debug("Invalid boot slot\n");
+        Debug(DEBUG_LOG_PREFIX "Invalid boot slot\n");
         return;
     }
 
@@ -748,7 +748,7 @@ void Bootloader_Jump_To_App(Bootloader_Slot_t slot)
  */
 void Bootloader_Default()
 {
-    Debug("Bootloader default\n");
+    Debug(DEBUG_LOG_PREFIX "Bootloader default\n");
     while (1)
     {
         Led_Blink(200);

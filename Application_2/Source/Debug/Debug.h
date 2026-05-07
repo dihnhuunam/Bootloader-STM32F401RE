@@ -12,6 +12,8 @@ extern "C"
 
 #include <stdint.h>
 
+#define DEBUG_LOG_PREFIX "[SLOT_B] "
+
     /**
      * @brief Prints a formatted debug message through the configured UART.
      * @param format printf-style format string.

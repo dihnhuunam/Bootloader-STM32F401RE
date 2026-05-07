@@ -56,13 +56,13 @@ static bool App_Metadata_Write(const ImageMetadata_t *metadata)
 
     if (Flash_Erase(METADATA_BASE_ADDR, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
     if (Flash_Write(METADATA_BASE_ADDR, (const uint8_t *)metadata, sizeof(*metadata)) != FLASH_STATUS_OK)
     {
-        Debug("Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "Metadata write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
@@ -70,7 +70,7 @@ static bool App_Metadata_Write(const ImageMetadata_t *metadata)
 }
 
 /**
- * @brief Confirms Application 3 as the successfully booted image.
+ * @brief Confirms Application as the successfully booted image.
  *
  * The linked slot is confirmed when it is already the active slot or when it
  * is the pending slot selected by the bootloader.
@@ -116,7 +116,7 @@ static void App_Confirm_Boot(void)
 
     if (App_Metadata_Write(&metadata))
     {
-        Debug("Application 3 Slot %s boot confirmed\n", APP_SLOT_LABEL);
+        Debug(DEBUG_LOG_PREFIX "Application Slot %s boot confirmed\n", APP_SLOT_LABEL);
     }
 }
 
@@ -135,7 +135,7 @@ void App_Start()
     uint32_t version_patch = version & 0xFFU;
 
 #if defined(APP_ROLLBACK_DEMO_FAULT) && (APP_ROLLBACK_DEMO_FAULT != 0)
-    Debug("Application 3 Slot %s rollback demo fault before boot confirm\n", APP_SLOT_LABEL);
+    Debug(DEBUG_LOG_PREFIX "Application Slot %s rollback demo fault before boot confirm\n", APP_SLOT_LABEL);
     HAL_Delay(100U);
     NVIC_SystemReset();
 #endif
@@ -147,7 +147,7 @@ void App_Start()
     {
         UartOTA_Process(APP_ACTIVE_SLOT);
         Led_Blink(3000);
-        Debug("Application Firmware 3 Slot %s v%lu.%lu.%lu\n", APP_SLOT_LABEL, (unsigned long)version_major,
+        Debug(DEBUG_LOG_PREFIX "Application Firmware v%lu.%lu.%lu\n", (unsigned long)version_major,
               (unsigned long)version_minor, (unsigned long)version_patch);
         HAL_Delay(3000);
     }

@@ -142,7 +142,7 @@ static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info,
 
     if (Flash_Erase(slot_info->base_addr, slot_info->size) != FLASH_STATUS_OK)
     {
-        Debug("OTA erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "OTA erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
@@ -155,7 +155,7 @@ static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info,
 
         if (!UartOTA_Read_Exact(s_uartota_buffer, chunk))
         {
-            Debug("OTA receive failed\n");
+            Debug(DEBUG_LOG_PREFIX "OTA receive failed\n");
             (void)UartOTA_Send_Response(UART_OTA_NACK);
             return false;
         }
@@ -169,7 +169,7 @@ static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info,
 
         if (Flash_Write(slot_info->base_addr + offset, s_uartota_buffer, chunk) != FLASH_STATUS_OK)
         {
-            Debug("OTA write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+            Debug(DEBUG_LOG_PREFIX "OTA write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
             (void)UartOTA_Send_Response(UART_OTA_NACK);
             return false;
         }
@@ -181,7 +181,7 @@ static bool UartOTA_Receive_And_Write_Image(const UartOTA_SlotInfo_t *slot_info,
     if ((image_header->magic != APP_MAGIC_NUMBER) || (image_header->image_size == 0U) ||
         (image_header->image_size > (slot_info->size - VTABLE_OFFSET)))
     {
-        Debug("OTA image header invalid\n");
+        Debug(DEBUG_LOG_PREFIX "OTA image header invalid\n");
         (void)UartOTA_Send_Response(UART_OTA_NACK);
         return false;
     }
@@ -208,13 +208,13 @@ static bool UartOTA_Write_Request(const UartOTA_SlotInfo_t *slot_info, const Ima
 
     if (Flash_Erase(OTA_REQUEST_BASE_ADDR, OTA_REQUEST_SIZE) != FLASH_STATUS_OK)
     {
-        Debug("OTA request erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "OTA request erase failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
     if (Flash_Write(OTA_REQUEST_BASE_ADDR, (const uint8_t *)&request, sizeof(request)) != FLASH_STATUS_OK)
     {
-        Debug("OTA request write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
+        Debug(DEBUG_LOG_PREFIX "OTA request write failed: 0x%08lX\n", (unsigned long)Flash_GetLastError());
         return false;
     }
 
@@ -235,7 +235,7 @@ static bool UartOTA_Handle_Update(uint8_t active_slot)
 
     if (!UartOTA_Get_Inactive_Slot(active_slot, &target_slot))
     {
-        Debug("OTA active slot invalid\n");
+        Debug(DEBUG_LOG_PREFIX "OTA active slot invalid\n");
         (void)UartOTA_Send_Response(UART_OTA_NACK);
         return false;
     }
@@ -248,14 +248,14 @@ static bool UartOTA_Handle_Update(uint8_t active_slot)
 
     if (!UartOTA_Read_Exact((uint8_t *)&image_size, sizeof(image_size)))
     {
-        Debug("OTA image size receive failed\n");
+        Debug(DEBUG_LOG_PREFIX "OTA image size receive failed\n");
         (void)UartOTA_Send_Response(UART_OTA_NACK);
         return false;
     }
 
     if ((image_size < sizeof(ImageHeader_t)) || (image_size > target_slot.size))
     {
-        Debug("OTA image size invalid: %lu\n", (unsigned long)image_size);
+        Debug(DEBUG_LOG_PREFIX "OTA image size invalid: %lu\n", (unsigned long)image_size);
         (void)UartOTA_Send_Response(UART_OTA_NACK);
         return false;
     }
@@ -274,7 +274,7 @@ static bool UartOTA_Handle_Update(uint8_t active_slot)
     }
 
     (void)UartOTA_Send_Response(UART_OTA_ACK);
-    Debug("OTA image stored for Slot %c, pending next reset\n", (target_slot.slot == IMAGE_SLOT_A) ? 'A' : 'B');
+    Debug(DEBUG_LOG_PREFIX "OTA image stored for Slot %c, pending next reset\n", (target_slot.slot == IMAGE_SLOT_A) ? 'A' : 'B');
     return true;
 }
 
@@ -304,10 +304,10 @@ void UartOTA_Process(uint8_t active_slot)
     s_uartota_start_requested = false;
     __enable_irq();
 
-    Debug("UART OTA start\n");
+    Debug(DEBUG_LOG_PREFIX "UART OTA start\n");
     if (!UartOTA_Handle_Update(active_slot))
     {
-        Debug("UART OTA failed\n");
+        Debug(DEBUG_LOG_PREFIX "UART OTA failed\n");
     }
 
     UartOTA_Start_Receive_IT();
