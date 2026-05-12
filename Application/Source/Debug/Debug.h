@@ -12,11 +12,18 @@ extern "C"
 
 #include <stdint.h>
 
-#define DEBUG_LOG_PREFIX "[BOOTLOADER] "
+#if APP_IMAGE_SLOT == 0
+#define DEBUG_LOG_PREFIX "[SLOT_A] "
+#elif APP_IMAGE_SLOT == 1
+#define DEBUG_LOG_PREFIX "[SLOT_B] "
+#else
+#error "APP_IMAGE_SLOT must be 0 or 1"
+#endif
 
     /**
      * @brief Prints a formatted debug message through the configured UART.
-     * @param format printf-style format string.
+     * @param format printf-style
+     * format string.
      * @param ... Format arguments.
      */
     void Debug(const char *format, ...);

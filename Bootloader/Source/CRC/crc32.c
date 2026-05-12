@@ -111,7 +111,7 @@ Crc32_Status_t Crc32_Calculate(const uint8_t *data, uint32_t length, uint32_t *c
     }
 
     *crc32 = crc;
-    Debug("CRC32 = 0x%X\n", *crc32);
+    Debug(DEBUG_LOG_PREFIX "CRC32 = 0x%X\n", *crc32);
     return CRC32_STATUS_OK;
 }
 
